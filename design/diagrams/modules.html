@@ -1,0 +1,46 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="out" content="docs/readme/modules">
+<title>모듈 구조</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+  .foot { margin-top: 22px; display: grid; grid-template-columns: 110px 1fr; gap: 22px; align-items: center; }
+  .foot .dashed { grid-template-columns: 1.4fr 1fr 1fr; }
+</style>
+<div id="diagram">
+  <div class="tiers">
+    <span class="tier-label">app</span>
+    <div class="tier hl">
+      <div class="chip wide"><b>app:web</b><span>블로그. wasmJs. 셸, 주소창 동기화</span></div>
+      <div class="chip wide"><b>app:admin</b><span>글쓰기 맥 앱. JVM. 파일, 이미지, 번역</span></div>
+    </div>
+    <span class="tier-note">web은 feature를, admin은 core를 직접 씀</span>
+    <span class="tier-label">feature</span>
+    <div class="tier">
+      <div class="chip"><b>home</b><span>목록, 검색</span></div>
+      <div class="chip"><b>post</b><span>글 상세</span></div>
+      <div class="chip"><b>pages</b><span>소개, 404</span></div>
+    </div>
+    <span class="tier-note">feature끼리는 서로 모름. 이동은 Navigator로만</span>
+    <span class="tier-label">core</span>
+    <div class="tier">
+      <div class="chip"><b>ui</b><span>조립 부품</span></div>
+      <div class="chip"><b>markdown</b><span>본문 렌더링</span></div>
+      <div class="chip"><b>navigation</b><span>Nav3 키</span></div>
+      <div class="chip"><b>data</b><span>파싱, 저장소</span></div>
+      <div class="chip"><b>designsystem</b><span>테마</span></div>
+      <div class="chip"><b>model</b><span>Post</span></div>
+      <div class="chip"><b>common</b><span>Result</span></div>
+      <div class="chip"><b>testing</b><span>가짜 저장소</span></div>
+    </div>
+  </div>
+  <div class="foot">
+    <span class="tier-label">컴파일</span>
+    <div class="dashed">
+      <div><b>commonMain</b>core와 feature 코드 거의 전부. 테스트도 여기</div>
+      <div><b>wasmJsMain</b>브라우저 API, 폰트 대기</div>
+      <div><b>jvmMain</b>파일, 클립보드, 데스크톱 브라우저</div>
+    </div>
+  </div>
+</div>
+<script src="kit.js"></script>

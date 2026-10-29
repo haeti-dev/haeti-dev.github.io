@@ -1,0 +1,11 @@
+{
+  "name": "haeti-diagrams",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "render": "node render.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

@@ -1,0 +1,33 @@
+# Gradle
+.gradle/
+build/
+**/build/
+local.properties
+
+# Kotlin
+.kotlin/
+
+# Kotlin/JS & Wasm: yarn.lock은 재현 가능한 빌드를 위해 커밋한다
+node_modules/
+kotlin-js-store/yarn.lock.bak
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+
+# 비공개 작업 문서 (TODO, 전체 트러블슈팅 기록, 디자인 변경 이력)
+notes/
+
+# Agent state
+.omc/
+.claude/settings.local.json
+.claude/launch.json
+.claude/worktrees/
+.codegraph/
+
+# 스킬 평가 작업물
+.claude/skills/*-workspace/

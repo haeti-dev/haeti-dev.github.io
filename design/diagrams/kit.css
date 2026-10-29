@@ -1,0 +1,99 @@
+/* Haeti 다이어그램 키트. 색과 글꼴은 블로그 토큰(HaetiColors, Pretendard, JetBrains Mono)에서만 가져온다. */
+@font-face { font-family: Pretendard; src: url("../../core/designsystem/src/commonMain/composeResources/font/pretendard_regular.ttf"); font-weight: 400; }
+@font-face { font-family: Pretendard; src: url("../../core/designsystem/src/commonMain/composeResources/font/pretendard_bold.ttf"); font-weight: 700; }
+@font-face { font-family: JBMono; src: url("../../core/designsystem/src/commonMain/composeResources/font/jetbrains_mono_regular.ttf"); }
+
+:root {
+  --ink: #16181D;       /* HaetiColors.Light.ink */
+  --ink2: #3D4250;      /* 카드 설명 문장 */
+  --muted: #5F6675;     /* inkMuted */
+  --subtle: #959BA8;    /* inkSubtle: 화살표, 보조선 */
+  --line: #E5E7EC;      /* line */
+  --card: #FFFFFF;
+  --sunk: #F3F4F7;      /* surface */
+  --accent: #2B6BEF;    /* brand */
+  --tint: #E8EFFD;
+}
+:root[data-theme="dark"] {
+  --ink: #EDEEF1;
+  --ink2: #C9CDD5;
+  --muted: #A3A9B5;
+  --subtle: #6E7480;
+  --line: #2B2F37;
+  --card: #1C1F25;      /* HaetiColors.Dark.surface */
+  --sunk: #17191E;
+  --accent: #6FA3FF;
+  --tint: #1A2740;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: transparent; }
+body { font-family: Pretendard, "Apple SD Gothic Neo", sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+.mono { font-family: JBMono, ui-monospace, monospace; }
+
+/* 캔버스: 렌더러가 이 요소만 찍는다. 폭은 README와 블로그 본문 모두에서 줄여 보여도 읽히는 1240px. */
+#diagram { position: relative; width: 1240px; padding: 36px; }
+
+/* 노드: 역할(작은 회색) / 이름(굵게) / 경로(모노, 파랑) / 설명 */
+.node { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 18px 16px; display: grid; gap: 6px; align-content: start; }
+.node.hl { border-color: var(--accent); background: var(--tint); }
+.node .role { font-size: 14px; color: var(--muted); }
+.node .name { font-size: 21px; font-weight: 700; line-height: 1.3; }
+.node .path { font-size: 13px; color: var(--accent); font-family: JBMono, monospace; }
+.node .what { font-size: 14.5px; color: var(--ink2); line-height: 1.5; }
+
+/* 가로 흐름: 노드 사이에 화살표를 자동으로 그린다. --cols로 칸 수를 정한다. */
+.flow { display: grid; grid-template-columns: repeat(var(--cols, 5), 1fr); gap: 34px; }
+.flow > .node:not(:last-child)::after { content: ""; position: absolute; right: -27px; top: 50%; width: 20px; height: 2px; background: var(--subtle); }
+.flow > .node:not(:last-child)::before { content: ""; position: absolute; right: -29px; top: calc(50% - 5px); border: 6px solid transparent; border-left: 7px solid var(--subtle); }
+
+/* 층: 왼쪽 라벨 + 회색 바탕 줄. 모듈 계층, 단계 묶음에 쓴다. */
+.tiers { display: grid; grid-template-columns: 110px 1fr; gap: 14px 22px; align-items: center; }
+.tier-label { text-align: right; font-size: 15px; color: var(--muted); }
+.tier { display: flex; gap: 10px; flex-wrap: wrap; padding: 14px; border-radius: 14px; background: var(--sunk); }
+.tier.hl { background: var(--tint); }
+.tier > .flow { flex: 1; }
+.tier-note { grid-column: 2; font-size: 14px; color: var(--muted); display: flex; gap: 10px; align-items: center; padding-left: 8px; }
+.tier-note::before { content: ""; width: 2px; height: 18px; background: var(--subtle); }
+
+/* 칩: 모듈 이름(모노) + 한 줄 설명 */
+.chip { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; display: grid; gap: 2px; }
+.chip b { font-size: 15.5px; font-weight: 400; font-family: JBMono, monospace; }
+.chip span { font-size: 13px; color: var(--muted); }
+.chip.wide { min-width: 290px; }
+
+/* 점선 상자: 실체가 아닌 구분(소스셋, 시점)을 보여 줄 때 */
+.dashed { display: grid; gap: 10px; }
+.dashed > div { border-radius: 12px; padding: 12px 14px; border: 1px dashed var(--line); font-size: 14px; color: var(--ink2); }
+.dashed b { display: block; font-family: JBMono, monospace; font-weight: 400; color: var(--ink); font-size: 14.5px; margin-bottom: 2px; }
+
+/* 알약 라벨: 연결선 위에 얹는 한 줄 설명 */
+.pill { display: inline-block; font-size: 15px; color: var(--ink2); background: var(--card); padding: 4px 14px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+.pill b { color: var(--accent); font-weight: 700; }
+
+/* 연결선 레이어: kit.js가 data-from/data-to를 읽어 경로를 계산한다.
+   #diagram의 첫 자식으로 둬야 노드와 라벨 아래에 깔린다. */
+svg.links { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+svg.links path { fill: none; stroke-width: 2; }
+svg.links path.accent { stroke: var(--accent); stroke-dasharray: 6 6; }
+svg.links path.plain { stroke: var(--subtle); }
+
+/* 블로그 글용: 본문 컬럼(760dp)보다 조금 좁은 680px에 그리고 글자를 키운다. 휴대폰에서는 절반 크기로 줄어드는 것을 감안한 크기다. */
+#diagram.post { width: 680px; padding: 24px; }
+#diagram.post .node { padding: 18px 20px; }
+#diagram.post .node .role { font-size: 16px; }
+#diagram.post .node .name { font-size: 25px; }
+#diagram.post .node .path { font-size: 16px; }
+#diagram.post .node .what { font-size: 19px; }
+#diagram.post .flow { gap: 30px; }
+#diagram.post .chip b { font-size: 18px; }
+#diagram.post .chip span { font-size: 16px; }
+#diagram.post .pill { font-size: 17px; }
+#diagram.post .tier-label { font-size: 17px; }
+#diagram.post .tier-note { font-size: 16px; }
+#diagram.post .tiers { grid-template-columns: 88px 1fr; }
+
+/* 세로 흐름: 노드를 위에서 아래로 쌓고 사이에 아래 화살표. 글에서 단계가 셋을 넘으면 이것을 쓴다. */
+.flow-v { display: grid; gap: 30px; }
+.flow-v > .node:not(:last-child)::after { content: ""; position: absolute; left: 50%; bottom: -24px; width: 2px; height: 16px; background: var(--subtle); }
+.flow-v > .node:not(:last-child)::before { content: ""; position: absolute; left: calc(50% - 5px); bottom: -30px; border: 6px solid transparent; border-top: 7px solid var(--subtle); }

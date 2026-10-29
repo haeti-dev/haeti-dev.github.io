@@ -1,0 +1,17 @@
+{
+  "skill_name": "haeti-translate-post",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "이 글 영어 번역본 만들어줘: 2024-06-01-baseline-profile",
+      "expected_output": "index.en.md next to index.md with title/summary/source frontmatter; natural first-person English dev-blog voice; all code, links, images, numbers preserved; status up-to-date.",
+      "files": ["inputs/2024-06-01-baseline-profile/index.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "2025-02-12-as-state-flow-deepdive 글 영어로 번역해서 올릴 준비해줘",
+      "expected_output": "index.en.md that reads like a native Kotlin explainer post; code blocks identical except Korean comments; source stamped.",
+      "files": ["inputs/2025-02-12-as-state-flow-deepdive/index.md"]
+    }
+  ]
+}

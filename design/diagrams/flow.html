@@ -1,0 +1,23 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="out" content="docs/readme/flow">
+<title>전체 흐름</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+  .share { position: relative; height: 92px; margin-top: 4px; }
+  .share .pill { position: absolute; left: 50%; top: 52px; transform: translateX(-50%); }
+</style>
+<div id="diagram">
+  <svg class="links"><path class="accent" data-from="admin" data-to="browser" data-shape="under" data-via="shared"/></svg>
+  <div class="flow" style="--cols: 5">
+    <div class="node" id="admin"><span class="role">쓰기</span><span class="name">어드민 맥 앱</span><span class="path">app/admin</span><span class="what">마크다운 편집, 이미지 넣기, 영어 번역</span></div>
+    <div class="node hl"><span class="role">원본</span><span class="name">글 폴더</span><span class="path">content/posts</span><span class="what">글 하나에 폴더 하나. 서버도 DB도 없음</span></div>
+    <div class="node"><span class="role">묶기</span><span class="name">Gradle 빌드</span><span class="path">build-logic</span><span class="what">글을 정적 파일로, 링크 미리보기와 RSS 생성</span></div>
+    <div class="node"><span class="role">올리기</span><span class="name">GitHub Pages</span><span class="path">.github/workflows</span><span class="what">만들어진 파일을 그대로 서빙</span></div>
+    <div class="node" id="browser"><span class="role">읽기</span><span class="name">브라우저</span><span class="path">app/web</span><span class="what">Kotlin/Wasm 앱이 캔버스에 그림</span></div>
+  </div>
+  <div class="share">
+    <span class="pill" id="shared">같은 렌더러 <b class="mono">core:markdown</b> 로 그려서 미리보기가 곧 배포 화면</span>
+  </div>
+</div>
+<script src="kit.js"></script>

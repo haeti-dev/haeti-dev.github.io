@@ -1,0 +1,33 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="out" content="docs/diagrams/pipeline">
+<title>글 데이터 흐름</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+  .tiers { row-gap: 56px; }
+</style>
+<div id="diagram">
+  <svg class="links">
+    <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" style="fill: var(--subtle)"/></marker></defs>
+    <path class="plain" data-from="resources" data-to="repo" data-shape="drop"/>
+  </svg>
+  <div class="tiers">
+    <span class="tier-label">빌드할 때</span>
+    <div class="tier">
+      <div class="flow" style="--cols: 3">
+        <div class="node hl"><span class="role">원본</span><span class="name">글 폴더</span><span class="path">content/posts</span><span class="what">글 하나에 폴더 하나. 초안도 여기 있음</span></div>
+        <div class="node"><span class="role">고르기</span><span class="name">PostsResourcesTask</span><span class="path">build-logic</span><span class="what">초안을 빼고 복사, 최신순 index.json 생성</span></div>
+        <div class="node" id="resources"><span class="role">연결</span><span class="name">Compose Resources</span><span class="path">customDirectory</span><span class="what">build/ 산출물을 그대로 연결. 소스 트리에는 복사 안 함</span></div>
+      </div>
+    </div>
+    <span class="tier-label">브라우저에서</span>
+    <div class="tier">
+      <div class="flow" style="--cols: 3">
+        <div class="node" id="repo"><span class="role">읽기</span><span class="name">BundledPostRepository</span><span class="path">core:data</span><span class="what">한 번 읽어 파싱하고 메모리에 캐시. 깨진 글은 그 글만 빠짐</span></div>
+        <div class="node"><span class="role">상태</span><span class="name">ViewModel</span><span class="path">feature:*</span><span class="what">Flow를 Loading, Success, Error로</span></div>
+        <div class="node"><span class="role">그리기</span><span class="name">Screen</span><span class="path">feature:*</span><span class="what">상태에 따라 로딩, 목록, 오류 화면</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="kit.js"></script>
