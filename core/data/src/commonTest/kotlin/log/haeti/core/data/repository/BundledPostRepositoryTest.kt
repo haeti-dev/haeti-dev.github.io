@@ -151,4 +151,44 @@ class BundledPostRepositoryTest {
             assertEquals(listOf(Language.EN, Language.KO), posts.map { it.language })
             assertEquals("요약 한 줄", posts.first().meta.summary)
         }
+
+    @Test
+    fun `글을 동시에 읽어 글 수만큼 기다리지 않는다`() =
+        runTest {
+            val slow =
+                FakePostSource(
+                    index = listOf("2026-01-02-old", "2026-03-03-mid", "2026-08-18-hello"),
+                    markdown =
+                        mapOf(
+                            "2026-01-02-old" to markdown("옛 글", "2026-01-02"),
+                            "2026-03-03-mid" to markdown("중간 글", "2026-03-03"),
+                            "2026-08-18-hello" to markdown("첫 글", "2026-08-18"),
+                        ),
+                    markdownDelayMillis = 100,
+                )
+            val posts = BundledPostRepository(slow).observePosts().first()
+
+            assertEquals(100, testScheduler.currentTime)
+            assertEquals(listOf("hello", "mid", "old"), posts.map { it.meta.slug })
+        }
+
+    @Test
+    fun `번역본도 동시에 읽는다`() =
+        runTest {
+            val slow =
+                FakePostSource(
+                    index = listOf("2026-01-02-old", "2026-03-03-mid"),
+                    markdown =
+                        mapOf(
+                            "2026-01-02-old" to markdown("옛 글", "2026-01-02"),
+                            "2026-03-03-mid" to markdown("중간 글", "2026-03-03"),
+                        ),
+                    translations = mapOf("2026-03-03-mid" to "---\ntitle: Middle post\n---\n\nBody"),
+                    markdownDelayMillis = 100,
+                )
+            val posts = BundledPostRepository(slow).observePosts(Language.EN).first()
+
+            assertEquals(200, testScheduler.currentTime)
+            assertEquals(listOf("Middle post", "옛 글"), posts.map { it.meta.title })
+        }
 }

@@ -4,6 +4,9 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
@@ -16,6 +19,15 @@ import log.haeti.core.model.PostMeta
 
 /** 디렉터리명(`yyyy-MM-dd-slug`)에서 날짜 접두사가 차지하는 길이. */
 private const val DATE_PREFIX_LENGTH = 11
+
+/**
+ * [items]를 동시에 읽는다. 웹에서는 파일 하나가 요청 하나라, 차례로 읽으면 글 수만큼 기다린다.
+ * 결과 순서는 [items]와 같다.
+ */
+private suspend fun <T, R> readAll(
+    items: List<T>,
+    read: suspend (T) -> R,
+): List<R> = coroutineScope { items.map { item -> async { read(item) } }.awaitAll() }
 
 /**
  * 번들 리소스에서 글을 읽는 [PostRepository].
@@ -59,7 +71,7 @@ class BundledPostRepository(
     private suspend fun load(language: Language): List<Post> {
         val (originals, complete) = cache[Language.KO]?.let { it to true } ?: readOriginals()
         val posts =
-            if (language == Language.KO) originals else originals.map { translationOrNull(it, language) ?: it }
+            if (language == Language.KO) originals else readAll(originals) { translationOrNull(it, language) ?: it }
         if (complete) {
             cache[Language.KO] = originals
             cache[language] = posts
@@ -69,7 +81,7 @@ class BundledPostRepository(
 
     /** 인덱스의 글을 읽어 발행 글만 최신순으로 돌려준다. 두 번째 값은 원문을 빠짐없이 읽었는지 여부. */
     private suspend fun readOriginals(): Pair<List<Post>, Boolean> {
-        val raws = source.readIndex().map { directory -> directory to source.readMarkdown(directory) }
+        val raws = readAll(source.readIndex()) { directory -> directory to source.readMarkdown(directory) }
         val posts =
             raws
                 .mapNotNull { (directory, raw) -> raw?.let { parseOrNull(it, directory) } }
