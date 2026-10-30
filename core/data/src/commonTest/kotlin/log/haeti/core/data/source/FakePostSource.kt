@@ -1,5 +1,6 @@
 package log.haeti.core.data.source
 
+import kotlinx.coroutines.delay
 import log.haeti.core.model.Language
 
 /**
@@ -10,6 +11,7 @@ import log.haeti.core.model.Language
  * @param assets `"디렉터리명/상대경로"` → 바이트
  * @param translations 디렉터리명 → 영어 번역본(`index.en.md`) 원문
  * @param indexError 있으면 `readIndex`가 이 예외를 던진다
+ * @param markdownDelayMillis `readMarkdown` 한 번에 걸리는 가상 시간. 동시에 읽는지 검증할 때 쓴다
  */
 class FakePostSource(
     private val index: List<String>,
@@ -17,6 +19,7 @@ class FakePostSource(
     private val assets: Map<String, ByteArray> = emptyMap(),
     private val translations: Map<String, String> = emptyMap(),
     private val indexError: Exception? = null,
+    private val markdownDelayMillis: Long = 0,
 ) : BundledPostSource {
     /** `readIndex` 호출 횟수. 캐시가 중복 로드를 막는지 검증할 때 쓴다. */
     var indexReadCount: Int = 0
@@ -31,7 +34,10 @@ class FakePostSource(
     override suspend fun readMarkdown(
         directory: String,
         language: Language,
-    ): String? = if (language == Language.KO) markdown[directory] else translations[directory]
+    ): String? {
+        delay(markdownDelayMillis)
+        return if (language == Language.KO) markdown[directory] else translations[directory]
+    }
 
     override suspend fun readAsset(
         directory: String,
