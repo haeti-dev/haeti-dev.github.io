@@ -18,7 +18,6 @@ reviews:
   path_filters:
     - "!**/build/**"
     - "!kotlin-js-store/**"
-    - "!content/posts/**/images/**"
     - "!design/**/*.png"
   path_instructions:
     - path: "**/*.kt"
