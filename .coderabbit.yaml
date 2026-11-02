@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://www.coderabbit.ai/integrations/schema.v2.json
+# CodeRabbit PR 리뷰 설정. 코드 규칙은 기본 설정대로 CLAUDE.md와 .claude/rules/에서 읽는다.
+language: ko-KR
+tone_instructions: >-
+  한국어로 짧고 구체적으로 리뷰한다. 동작 오류, 크래시, 보안, 프로젝트 규칙 위반을 먼저 다루고
+  취향 수준의 지적은 하지 않는다. 확실하지 않으면 단정하지 말고 확인이 필요하다고 쓴다.
+
+reviews:
+  profile: chill
+  high_level_summary: true
+  poem: false
+  in_progress_fortune: false
+  sequence_diagrams: false
+  collapse_walkthrough: true
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - "!**/build/**"
+    - "!kotlin-js-store/**"
+    - "!content/posts/**/images/**"
+    - "!design/**/*.png"
+  path_instructions:
+    - path: "**/*.kt"
+      instructions: >-
+        Kotlin Multiplatform(jvm, wasmJs) 코드다. 공개 API의 한국어 KDoc, 파일 200줄과 함수 40줄 제한,
+        .claude/rules/architecture.md의 모듈 경계를 확인한다. 웹은 캔버스 렌더링이라 DOM에 본문이 없다는 점을 전제로 본다.
+    - path: "app/admin/**"
+      instructions: >-
+        로컬 전용 집필 앱이다. 네트워크 호출이 생기거나 웹 배포 산출물과 연결되면 반드시 지적한다.
+        TranslationRunner가 로컬 claude CLI를 실행하는 것만 예외다.
+    - path: "content/posts/**/*.md"
+      instructions: >-
+        블로그 글이다. 문체나 표현은 고치지 말고 프론트매터 형식, 깨진 이미지 경로, 다른 글 링크 형식
+        (post/<slug> 상대 경로), 명백한 오탈자만 본다. 형식은 .claude/rules/content-format.md를 따른다.
+  tools:
+    languagetool:
+      enabled: false
+    markdownlint:
+      enabled: false
