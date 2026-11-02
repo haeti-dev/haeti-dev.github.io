@@ -3,11 +3,15 @@ package log.haeti.core.markdown
 import log.haeti.core.markdown.model.TextSegment
 
 private const val VARIATION_SELECTOR = 0xFE0F
+private const val TEXT_SELECTOR = 0xFE0E
 private const val KEYCAP = 0x20E3
 private const val ZERO_WIDTH_JOINER = 0x200D
 private val KeycapBases = (0x30..0x39).toSet() + setOf(0x23, 0x2A)
 private val RegionalIndicators = 0x1F1E6..0x1F1FF
 private val SkinTones = 0x1F3FB..0x1F3FF
+
+/** 잉글랜드처럼 깃발 뒤에 붙어 지역을 정하는 태그 글자. U+E007F로 끝난다. */
+private val Tags = 0xE0020..0xE007F
 private val EmojiBlock = 0x1F300..0x1FAFF
 
 /** 변이 선택자 없이도 기본 표시가 이모지인 BMP 글자(Emoji_Presentation). */
@@ -88,14 +92,18 @@ private fun String.keycapEndOrNull(afterBase: Int): Int? {
     return if (codePointOrNull(keycapAt) == KEYCAP) keycapAt + 1 else null
 }
 
-/** 변이 선택자·피부색·ZWJ로 이어지는 뒷부분까지 포함한 끝 위치를 돌려준다. */
+/**
+ * 변이 선택자·피부색·태그·ZWJ로 이어지는 뒷부분까지 포함한 끝 위치를 돌려준다.
+ * 글자 모양 선택자(U+FE0E)도 남겨야 브라우저가 요청대로 글자 모양으로 그린다.
+ */
 private fun String.sequenceEnd(from: Int): Int {
     var end = from
     while (true) {
         val next = codePointOrNull(end) ?: return end
         end +=
             when {
-                next == VARIATION_SELECTOR || next == KEYCAP || next in SkinTones -> charCount(next)
+                next == VARIATION_SELECTOR || next == TEXT_SELECTOR || next == KEYCAP -> charCount(next)
+                next in SkinTones || next in Tags -> charCount(next)
                 next == ZERO_WIDTH_JOINER -> {
                     val joined = codePointOrNull(end + 1) ?: return end
                     1 + charCount(joined)

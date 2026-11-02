@@ -14,8 +14,8 @@ import com.mikepenz.markdown.model.DefaultMarkdownInlineContent
 import com.mikepenz.markdown.model.MarkdownAnnotator
 import com.mikepenz.markdown.model.MarkdownInlineContent
 import com.mikepenz.markdown.model.markdownAnnotator
+import com.mikepenz.markdown.utils.getUnescapedTextInNode
 import org.intellij.markdown.MarkdownTokenTypes
-import org.intellij.markdown.ast.getTextInNode
 
 /** 이모지 그림의 폭·높이. 글자 크기를 따라가므로 헤딩에서도 비율이 맞는다. */
 private val EmojiSize = 1.2.em
@@ -47,7 +47,8 @@ internal fun emojiAnnotator(inlineContent: MarkdownInlineContent): MarkdownAnnot
     val known = inlineContent.inlineContent.keys
     return markdownAnnotator { content, child ->
         if (child.type != MarkdownTokenTypes.TEXT) return@markdownAnnotator false
-        val segments = splitEmoji(child.getTextInNode(content).toString())
+        // 렌더러의 기본 TEXT 처리와 같은 문자열을 써야 `\*` 같은 이스케이프가 그대로 드러나지 않는다.
+        val segments = splitEmoji(child.getUnescapedTextInNode(content))
         if (segments.none { emojiId(it.text) in known }) return@markdownAnnotator false
         segments.forEach { segment ->
             val id = emojiId(segment.text)

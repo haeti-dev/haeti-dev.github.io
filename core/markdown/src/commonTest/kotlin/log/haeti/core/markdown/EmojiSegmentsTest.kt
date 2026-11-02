@@ -57,6 +57,17 @@ class EmojiSegmentsTest {
     }
 
     @Test
+    fun `글자 모양 선택자는 이모지 조각에 남긴다`() {
+        assertEquals(listOf("🏳︎"), emojiIn("🏳︎ 깃발"))
+    }
+
+    @Test
+    fun `태그로 이어지는 지역 깃발은 한 글자로 묶는다`() {
+        val england = "🏴󠁧󠁢󠁥󠁮󠁧󠁿"
+        assertEquals(listOf(england), emojiIn("$england 잉글랜드"))
+    }
+
+    @Test
     fun `국기는 지역 문자 두 개를 묶고 하나만 있으면 두지 않는다`() {
         val korea = "🇰🇷"
         assertEquals(listOf(korea), emojiIn("$korea 🇰"))
