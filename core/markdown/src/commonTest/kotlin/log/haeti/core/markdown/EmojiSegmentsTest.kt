@@ -57,8 +57,9 @@ class EmojiSegmentsTest {
     }
 
     @Test
-    fun `글자 모양 선택자는 이모지 조각에 남긴다`() {
-        assertEquals(listOf("🏳︎"), emojiIn("🏳︎ 깃발"))
+    fun `글자 모양 선택자가 붙으면 이모지로 바꾸지 않고 글자로 둔다`() {
+        assertEquals(emptyList(), emojiIn("🏳︎ 깃발 ⚠︎ 주의"))
+        assertEquals("🏳︎ 깃발", splitEmoji("🏳︎ 깃발").joinToString("") { it.text })
     }
 
     @Test

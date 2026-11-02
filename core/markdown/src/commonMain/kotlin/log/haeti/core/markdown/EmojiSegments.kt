@@ -72,7 +72,10 @@ internal fun splitEmoji(text: String): List<TextSegment> {
     return segments
 }
 
-/** [start]에서 이모지가 시작되면 그 끝 위치를, 아니면 null을 돌려준다. */
+/**
+ * [start]에서 이모지가 시작되면 그 끝 위치를, 아니면 null을 돌려준다.
+ * 글자 모양 선택자(U+FE0E)가 붙으면 글자로 둔다. 그림으로 바꾸면 테마 색을 따르지 못해 다크 모드에서 묻힌다.
+ */
 private fun String.emojiEndOrNull(start: Int): Int? {
     val first = codePointAt(start)
     val afterFirst = start + charCount(first)
@@ -80,6 +83,7 @@ private fun String.emojiEndOrNull(start: Int): Int? {
     return when {
         first in RegionalIndicators -> if (next in RegionalIndicators) afterFirst + charCount(next!!) else null
         first in KeycapBases -> keycapEndOrNull(afterFirst)
+        next == TEXT_SELECTOR -> null
         first in EmojiBlock || PresentationBmp.any { first in it } || next == VARIATION_SELECTOR ->
             sequenceEnd(afterFirst)
         else -> null
@@ -92,17 +96,14 @@ private fun String.keycapEndOrNull(afterBase: Int): Int? {
     return if (codePointOrNull(keycapAt) == KEYCAP) keycapAt + 1 else null
 }
 
-/**
- * 변이 선택자·피부색·태그·ZWJ로 이어지는 뒷부분까지 포함한 끝 위치를 돌려준다.
- * 글자 모양 선택자(U+FE0E)도 남겨야 브라우저가 요청대로 글자 모양으로 그린다.
- */
+/** 변이 선택자·피부색·태그·ZWJ로 이어지는 뒷부분까지 포함한 끝 위치를 돌려준다. */
 private fun String.sequenceEnd(from: Int): Int {
     var end = from
     while (true) {
         val next = codePointOrNull(end) ?: return end
         end +=
             when {
-                next == VARIATION_SELECTOR || next == TEXT_SELECTOR || next == KEYCAP -> charCount(next)
+                next == VARIATION_SELECTOR || next == KEYCAP -> charCount(next)
                 next in SkinTones || next in Tags -> charCount(next)
                 next == ZERO_WIDTH_JOINER -> {
                     val joined = codePointOrNull(end + 1) ?: return end
