@@ -81,6 +81,8 @@ private fun HaetiMarkdown(
     compact: Boolean,
     modifier: Modifier,
 ) {
+    val emojiContent = rememberEmojiInlineContent(cleaned)
+    val annotator = remember(emojiContent) { emojiAnnotator(emojiContent) }
     Markdown(
         // 본문이 바뀌어(언어 전환·어드민 입력) 다시 파싱하는 동안 이전 결과를 그대로 둔다. 기본값이면 빈 상자가 그려져
         // 본문 높이가 0이 되고, 스크롤이 당겨져 읽던 위치를 잃는다.
@@ -92,6 +94,8 @@ private fun HaetiMarkdown(
         padding = markdownPadding(block = 10.dp, codeBlock = HAETI_CODE_CARD_PADDING),
         extendedSpans = rememberInlineCodeChips(compact),
         imageTransformer = transformer,
+        annotator = annotator,
+        inlineContent = emojiContent,
         components =
             markdownComponents(
                 heading1 = { model -> SpacedHeading(model, level = 1, compact = compact) },
