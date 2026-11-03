@@ -80,7 +80,6 @@ val generateSiteFiles = tasks.register<SiteFilesTask>("generateSiteFiles") {
     dependsOn("wasmJsBrowserDistribution")
     contentDirectory.set(rootProject.layout.projectDirectory.dir("content/posts"))
     template.set(layout.buildDirectory.file("dist/wasmJs/productionExecutable/index.html"))
-    wasmFiles.from(fileTree(layout.buildDirectory.dir("dist/wasmJs/productionExecutable")) { include("*.wasm") })
     boldFont.set(fonts.file("pretendard_bold.ttf"))
     regularFont.set(fonts.file("pretendard_regular.ttf"))
     siteUrl.set(deploySiteUrl)

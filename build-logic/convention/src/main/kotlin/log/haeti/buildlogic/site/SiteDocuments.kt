@@ -6,20 +6,6 @@ import java.time.format.DateTimeFormatter
 /** index.html 안에서 페이지별 메타 태그가 들어갈 자리. */
 internal const val HEAD_MARKER = "<!-- haeti:head -->"
 
-/** index.html 안에서 wasm 미리 받기 태그가 들어갈 자리. */
-private const val PRELOAD_MARKER = "<!-- haeti:preload -->"
-
-/**
- * [wasmNames]를 HTML을 받자마자 받도록 미리 받기 태그로 넣는다. 이름이 빌드마다 바뀌어 템플릿에 적어 둘 수 없다.
- * `crossorigin`은 앱이 wasm을 받는 fetch와 요청 방식을 맞춰 두 번 받지 않게 한다.
- */
-internal fun String.withWasmPreload(wasmNames: List<String>): String {
-    check(PRELOAD_MARKER in this) { "index.html에 $PRELOAD_MARKER 자리가 없습니다" }
-    check(wasmNames.isNotEmpty()) { "배포 번들에서 wasm 파일을 찾지 못했습니다" }
-    val tags = wasmNames.joinToString("\n    ") { """<link rel="preload" href="$it" as="fetch" crossorigin />""" }
-    return replace(PRELOAD_MARKER, tags)
-}
-
 private val TITLE_TAG = Regex("<title>.*?</title>")
 private val SEOUL = ZoneId.of("Asia/Seoul")
 private const val FEED_SIZE = 20

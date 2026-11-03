@@ -13,14 +13,6 @@
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <!-- 배포 빌드(generateSiteFiles)가 이 자리에 설명·OG·RSS 태그를 페이지마다 채운다. 개발 서버에서는 비어 있다. -->
     <!-- haeti:head -->
-    <!-- 앱과 폰트를 HTML을 받자마자 함께 받는다. 그대로 두면 haeti.js가 뜬 뒤 wasm을, wasm이 뜬 뒤 폰트를 받는다.
-         as="fetch"와 crossorigin은 앱의 fetch와 요청 방식이 같아야 한 요청으로 묶여 두 번 받지 않는다.
-         wasm 이름은 빌드마다 바뀌어 배포 빌드(generateSiteFiles)가 아래 자리에 채운다. -->
-    <!-- haeti:preload -->
-    <link rel="preload" href="haeti.js" as="script" />
-    <link rel="preload" href="composeResources/log.haeti.core.designsystem.generated.resources/font/pretendard_regular_web.woff2" as="fetch" crossorigin />
-    <link rel="preload" href="composeResources/log.haeti.core.designsystem.generated.resources/font/pretendard_bold_web.woff2" as="fetch" crossorigin />
-    <link rel="preload" href="composeResources/log.haeti.core.designsystem.generated.resources/font/jetbrains_mono_regular_web.woff2" as="fetch" crossorigin />
     <style>
         :root {
             --bg: #FCFCFD;
