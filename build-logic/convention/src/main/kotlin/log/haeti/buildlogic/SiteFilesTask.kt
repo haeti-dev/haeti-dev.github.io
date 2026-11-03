@@ -8,10 +8,12 @@ import log.haeti.buildlogic.site.renderFeed
 import log.haeti.buildlogic.site.renderRobots
 import log.haeti.buildlogic.site.renderShell
 import log.haeti.buildlogic.site.renderSitemap
+import log.haeti.buildlogic.site.withWasmPreload
 import log.haeti.buildlogic.site.writeCoverOg
 import log.haeti.buildlogic.site.writeSiteOg
 import log.haeti.buildlogic.site.writeThumbnailOg
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileSystemOperations
 import org.gradle.api.file.RegularFileProperty
@@ -21,6 +23,7 @@ import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -51,6 +54,11 @@ abstract class SiteFilesTask : DefaultTask() {
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val template: RegularFileProperty
+
+    /** 배포 번들의 wasm 파일. 이름만 쓰며, 셸에 미리 받기 태그로 넣는다. */
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NAME_ONLY)
+    abstract val wasmFiles: ConfigurableFileCollection
 
     /** 사이트 카드 워드마크 글꼴. */
     @get:InputFile
@@ -94,7 +102,7 @@ abstract class SiteFilesTask : DefaultTask() {
         output.resolve("og").mkdirs()
         val site = SiteInfo(siteUrl.get().trimEnd('/'), siteName.get(), siteDescription.get())
         val posts = publishedPosts(contentDirectory.get().asFile)
-        val template = template.get().asFile.readText()
+        val template = template.get().asFile.readText().withWasmPreload(wasmFiles.files.map { it.name }.sorted())
 
         writeSiteOg(site, boldFont.get().asFile, regularFont.get().asFile, output.resolve("og/site.png"))
         val home = renderShell(template, ShellPage("/", site.name, site.description, SITE_IMAGE), site)
