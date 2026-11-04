@@ -2,10 +2,6 @@ package log.haeti.core.designsystem
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import log.haeti.core.designsystem.generated.resources.Res
-import log.haeti.core.designsystem.generated.resources.jetbrains_mono_regular
-import log.haeti.core.designsystem.generated.resources.pretendard_bold
-import log.haeti.core.designsystem.generated.resources.pretendard_regular
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.preloadFont
 
@@ -13,8 +9,8 @@ import org.jetbrains.compose.resources.preloadFont
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 actual fun rememberHaetiFontsReady(): Boolean {
-    val regular by preloadFont(Res.font.pretendard_regular)
-    val bold by preloadFont(Res.font.pretendard_bold)
-    val mono by preloadFont(Res.font.jetbrains_mono_regular)
+    val regular by preloadFont(HaetiFontFiles.regular)
+    val bold by preloadFont(HaetiFontFiles.bold)
+    val mono by preloadFont(HaetiFontFiles.mono)
     return regular != null && bold != null && mono != null
 }

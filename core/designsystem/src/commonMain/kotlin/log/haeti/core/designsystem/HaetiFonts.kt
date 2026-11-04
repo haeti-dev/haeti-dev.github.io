@@ -3,10 +3,6 @@ package log.haeti.core.designsystem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import log.haeti.core.designsystem.generated.resources.Res
-import log.haeti.core.designsystem.generated.resources.jetbrains_mono_regular
-import log.haeti.core.designsystem.generated.resources.pretendard_bold
-import log.haeti.core.designsystem.generated.resources.pretendard_regular
 import org.jetbrains.compose.resources.Font
 
 /**
@@ -15,8 +11,8 @@ import org.jetbrains.compose.resources.Font
 @Composable
 fun haetiPretendardFontFamily(): FontFamily =
     FontFamily(
-        Font(Res.font.pretendard_regular, FontWeight.Normal),
-        Font(Res.font.pretendard_bold, FontWeight.Bold),
+        Font(HaetiFontFiles.regular, FontWeight.Normal),
+        Font(HaetiFontFiles.bold, FontWeight.Bold),
     )
 
 /**
@@ -26,5 +22,5 @@ fun haetiPretendardFontFamily(): FontFamily =
 @Composable
 fun haetiMonoFontFamily(): FontFamily =
     FontFamily(
-        Font(Res.font.jetbrains_mono_regular, FontWeight.Normal),
+        Font(HaetiFontFiles.mono, FontWeight.Normal),
     )
