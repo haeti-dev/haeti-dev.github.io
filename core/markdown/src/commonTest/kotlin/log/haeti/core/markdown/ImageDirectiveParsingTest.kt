@@ -51,5 +51,6 @@ class ImageDirectiveParsingTest {
         assertNull(parseImageDirective("width=60").aspectRatio)
         assertNull(parseImageDirective("size=0x800").aspectRatio)
         assertNull(parseImageDirective("size=wide").aspectRatio)
+        assertNull(parseImageDirective("size=1x${"9".repeat(60)}").aspectRatio)
     }
 }

@@ -14,7 +14,7 @@ internal data class ImageSize(
 )
 
 private val MARKDOWN_IMAGE = Regex("""!\[([^\]]*)]\(([^)\s]+)\)(?:\{([^}]*)})?""")
-private val CODE_FENCE = Regex("""^\s*(```|~~~)""")
+private val CODE_FENCE = Regex("""^ {0,3}(`{3,}|~{3,})(.*)$""")
 private val DARK_ATTRIBUTE = Regex("""dark=(?:"([^"]*)"|([^\s}]+))""")
 private val PNG_SIGNATURE = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
 
@@ -31,12 +31,38 @@ internal fun withImageSizes(
     postDirectory: File,
 ): String {
     val root = postDirectory.canonicalFile
-    var inFence = false
-    return markdown.split("\n").joinToString("\n") { line ->
+    val lines = markdown.split("\n")
+    val prose = proseLineFlags(lines)
+    // 지시어는 경로별로 하나만 남는다. 지시어가 있는 경로를 다시 쓴 곳에 크기만 붙이면 앞 지시어를 덮어쓴다.
+    val directed =
+        lines.filterIndexed { i, _ -> prose[i] }
+            .flatMap { MARKDOWN_IMAGE.findAll(it) }
+            .filter { it.groupValues[3].isNotBlank() }
+            .map { it.groupValues[2] }
+            .toSet()
+    return lines
+        .mapIndexed { i, line -> if (prose[i]) MARKDOWN_IMAGE.replace(line) { withSize(it, root, directed) } else line }
+        .joinToString("\n")
+}
+
+/**
+ * 줄마다 코드 블록 밖이면 true. 닫는 펜스는 여는 펜스와 같은 문자로 같거나 더 길고 뒤에 공백만 있어야 한다(CommonMark).
+ * 그래야 백틱 네 개 블록 안의 세 개짜리 예시가 블록을 닫지 않는다.
+ */
+private fun proseLineFlags(lines: List<String>): List<Boolean> {
+    var open: String? = null
+    return lines.map { line ->
+        val fence = CODE_FENCE.matchEntire(line.trimEnd('\r'))
+        val current = open
         when {
-            CODE_FENCE.containsMatchIn(line) -> line.also { inFence = !inFence }
-            inFence -> line
-            else -> MARKDOWN_IMAGE.replace(line) { withSize(it, root) }
+            current == null && fence != null -> false.also { open = fence.groupValues[1] }
+            current == null -> true
+            else -> {
+                val marker = fence?.groupValues?.get(1)
+                val closes = marker != null && marker[0] == current[0] && marker.length >= current.length
+                if (closes && fence.groupValues[2].isBlank()) open = null
+                false
+            }
         }
     }
 }
@@ -48,9 +74,10 @@ internal fun withImageSizes(
 private fun withSize(
     match: MatchResult,
     root: File,
+    directed: Set<String>,
 ): String {
     val (alt, path, attributes) = match.destructured
-    if ("size=" in attributes) return match.value
+    if ("size=" in attributes || (attributes.isBlank() && path in directed)) return match.value
     val size = sizeOf(root, path) ?: return match.value
     val darkPath = DARK_ATTRIBUTE.find(attributes)?.let { it.groupValues[1].ifEmpty { it.groupValues[2] } }
     if (darkPath != null) {

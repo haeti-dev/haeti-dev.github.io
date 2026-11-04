@@ -36,11 +36,12 @@ internal fun parseImageDirective(attributes: String): ImageDirective {
     return ImageDirective(width, align, caption, dark, aspectRatio)
 }
 
-/** `가로x세로` 문자열의 가로/세로 비율. 형식이 틀리거나 0이 있으면 null. */
+/** `가로x세로` 문자열의 가로/세로 비율. 형식이 틀리거나 양의 유한값이 아니면 null. */
 private fun aspectRatioOf(value: String): Float? {
     val (width, height) = SIZE_REGEX.matchEntire(value)?.destructured ?: return null
     val (w, h) = width.toFloat() to height.toFloat()
-    return if (w > 0f && h > 0f) w / h else null
+    // 터무니없이 큰 값은 Infinity가 되어 비율이 0이나 무한이 된다. aspectRatio(0f)는 예외를 던진다.
+    return (w / h).takeIf { it.isFinite() && it > 0f }
 }
 
 /**

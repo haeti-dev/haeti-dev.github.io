@@ -93,6 +93,25 @@ class ImageSizesTest {
         )
     }
 
+    @Test
+    fun 긴_펜스_안의_짧은_펜스는_블록을_닫지_않는다() {
+        image("images/a.png", 40, 30)
+        val markdown = "````markdown\n```\n![](images/a.png)\n````\n![](images/a.png)"
+
+        assertEquals("````markdown\n```\n![](images/a.png)\n````\n![](images/a.png){size=40x30}", withImageSizes(markdown, post))
+    }
+
+    @Test
+    fun 지시어가_있는_경로를_다시_쓴_곳에는_덧붙이지_않는다() {
+        image("images/a.png", 40, 30)
+        val markdown = "![](images/a.png){width=60 caption=\"설명\"}\n\n![](images/a.png)"
+
+        assertEquals(
+            "![](images/a.png){width=60 caption=\"설명\" size=40x30}\n\n![](images/a.png)",
+            withImageSizes(markdown, post),
+        )
+    }
+
     private fun encode(
         format: String,
         width: Int,
