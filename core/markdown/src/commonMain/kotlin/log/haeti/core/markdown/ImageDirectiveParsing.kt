@@ -5,6 +5,7 @@ import log.haeti.core.markdown.model.ImageDirective
 
 private val IMAGE_DIRECTIVE_REGEX = Regex("""!\[([^\]]*)]\(([^)\s]+)\)\{([^}]*)}""")
 private val ATTRIBUTE_REGEX = Regex("""(\w+)=(?:"([^"]*)"|(\S+))""")
+private val SIZE_REGEX = Regex("""(\d+)x(\d+)""")
 
 /**
  * 지시어 블록(`{...}`) 안의 `key=value` 속성 문자열을 [ImageDirective]로 파싱한다.
@@ -15,6 +16,7 @@ internal fun parseImageDirective(attributes: String): ImageDirective {
     var align = ImageAlign.CENTER
     var caption: String? = null
     var dark: String? = null
+    var aspectRatio: Float? = null
     for (match in ATTRIBUTE_REGEX.findAll(attributes)) {
         val value = match.groupValues[2].ifEmpty { match.groupValues[3] }
         when (match.groupValues[1]) {
@@ -28,9 +30,17 @@ internal fun parseImageDirective(attributes: String): ImageDirective {
                     }
             "caption" -> caption = value
             "dark" -> dark = value
+            "size" -> aspectRatio = aspectRatioOf(value)
         }
     }
-    return ImageDirective(width, align, caption, dark)
+    return ImageDirective(width, align, caption, dark, aspectRatio)
+}
+
+/** `가로x세로` 문자열의 가로/세로 비율. 형식이 틀리거나 0이 있으면 null. */
+private fun aspectRatioOf(value: String): Float? {
+    val (width, height) = SIZE_REGEX.matchEntire(value)?.destructured ?: return null
+    val (w, h) = width.toFloat() to height.toFloat()
+    return if (w > 0f && h > 0f) w / h else null
 }
 
 /**

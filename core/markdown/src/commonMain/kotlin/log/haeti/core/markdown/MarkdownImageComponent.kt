@@ -59,7 +59,7 @@ internal fun MarkdownImageComponent(
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         Box(modifier = Modifier.fillMaxWidth()) {
             val sized = Modifier.fillMaxWidth(directive.width / 100f).align(directive.align.toBoxAlignment())
-            LoadedImage(painter = painter, alt = alt, modifier = sized, onClick = { zoomed = true })
+            LoadedImage(painter, alt, directive.aspectRatio, modifier = sized, onClick = { zoomed = true })
         }
         if (zoomed && painter != null) ImageZoomDialog(painter, directive.caption, onDismiss = { zoomed = false })
         directive.caption?.let { caption ->
@@ -75,20 +75,22 @@ internal fun MarkdownImageComponent(
 }
 
 /**
- * 다 읽은 이미지는 짧게 페이드인하고, 읽는 중에는 같은 폭의 16:9 자리를 먼저 차지한다.
- * 높이 0으로 두면 다 읽은 순간 아래 글이 한꺼번에 밀려 깜빡여 보인다.
+ * 다 읽은 이미지는 짧게 페이드인하고, 읽는 중에는 같은 폭과 비율의 자리를 먼저 차지한다.
+ * 비율은 배포 빌드가 기록한 [aspectRatio]를 쓰고, 없으면(어드민 미리보기) 16:9로 잡는다.
+ * 다 읽은 뒤에도 같은 비율을 지켜 자리와 이미지 높이가 어긋나 아래 글이 밀리지 않게 한다.
  */
 @Composable
 private fun LoadedImage(
     painter: Painter?,
     alt: String?,
+    aspectRatio: Float?,
     modifier: Modifier,
     onClick: () -> Unit,
 ) {
     if (painter == null) {
         Box(
             modifier
-                .aspectRatio(16f / 9f)
+                .aspectRatio(aspectRatio ?: PLACEHOLDER_ASPECT_RATIO)
                 .clip(RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.surface),
         )
@@ -100,12 +102,16 @@ private fun LoadedImage(
         contentScale = ContentScale.FillWidth,
         modifier =
             modifier
+                .then(if (aspectRatio != null) Modifier.aspectRatio(aspectRatio) else Modifier)
                 .fadeInOnAppear(painter)
                 .pauseWhenOffScreen(painter)
                 .pointerHoverIcon(PointerIcon.Hand)
                 .clickable(onClickLabel = "이미지 크게 보기", onClick = onClick),
     )
 }
+
+/** 크기가 기록되지 않은 이미지의 자리 비율. */
+private const val PLACEHOLDER_ASPECT_RATIO = 16f / 9f
 
 /** 애니메이션 이미지면 화면에 보일 때만 재생하게 한다. 스크롤 영역이 잘라 낸 이미지는 보이는 크기가 0이다. */
 private fun Modifier.pauseWhenOffScreen(painter: Painter): Modifier {
