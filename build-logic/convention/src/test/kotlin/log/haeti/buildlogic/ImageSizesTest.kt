@@ -112,6 +112,17 @@ class ImageSizesTest {
         )
     }
 
+    @Test
+    fun 캡션_글자_속_size와_dark는_속성으로_보지_않는다() {
+        image("images/a.png", 40, 30)
+        val markdown = "![](images/a.png){caption=\"size=1x1 dark=images/x.png 예시\"}"
+
+        assertEquals(
+            "![](images/a.png){caption=\"size=1x1 dark=images/x.png 예시\" size=40x30}",
+            withImageSizes(markdown, post),
+        )
+    }
+
     private fun encode(
         format: String,
         width: Int,

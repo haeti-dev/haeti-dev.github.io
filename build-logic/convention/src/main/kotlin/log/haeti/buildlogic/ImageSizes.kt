@@ -15,7 +15,9 @@ internal data class ImageSize(
 
 private val MARKDOWN_IMAGE = Regex("""!\[([^\]]*)]\(([^)\s]+)\)(?:\{([^}]*)})?""")
 private val CODE_FENCE = Regex("""^ {0,3}(`{3,}|~{3,})(.*)$""")
-private val DARK_ATTRIBUTE = Regex("""dark=(?:"([^"]*)"|([^\s}]+))""")
+
+/** 지시어 속성 `key=value`. 따옴표 값을 통째로 읽어 캡션 속 `size=` 같은 글자를 속성으로 보지 않는다. 앱의 파서와 같다. */
+private val ATTRIBUTE = Regex("""(\w+)=(?:"([^"]*)"|(\S+))""")
 private val PNG_SIGNATURE = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
 
 /**
@@ -77,9 +79,10 @@ private fun withSize(
     directed: Set<String>,
 ): String {
     val (alt, path, attributes) = match.destructured
-    if ("size=" in attributes || (attributes.isBlank() && path in directed)) return match.value
+    val keys = ATTRIBUTE.findAll(attributes).associate { it.groupValues[1] to it.groupValues[2].ifEmpty { it.groupValues[3] } }
+    if ("size" in keys || (attributes.isBlank() && path in directed)) return match.value
     val size = sizeOf(root, path) ?: return match.value
-    val darkPath = DARK_ATTRIBUTE.find(attributes)?.let { it.groupValues[1].ifEmpty { it.groupValues[2] } }
+    val darkPath = keys["dark"]
     if (darkPath != null) {
         val dark = sizeOf(root, darkPath)
         val sameRatio = dark != null && dark.width.toLong() * size.height == dark.height.toLong() * size.width
