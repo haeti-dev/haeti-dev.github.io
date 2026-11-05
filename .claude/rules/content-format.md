@@ -43,6 +43,9 @@ Attribute block immediately after a standard markdown image:
 - `align`: `left` | `center` | `right`. Default center.
 - `caption`: rendered under the image. Optional.
 - `dark`: image path shown instead in dark mode, e.g. `dark=images/flow-dark.png`. Optional.
+- `size`: pixel size as `size=1600x800`. Never write it by hand: `generatePostsResources`
+  adds it to the bundled copy (source posts stay untouched) so the app reserves the right
+  height before the image loads and text does not jump.
 - Plain `![alt](src)` without a block stays valid.
 
 ## Callout

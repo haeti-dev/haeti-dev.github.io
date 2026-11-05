@@ -55,10 +55,15 @@ abstract class PostsResourcesTask : DefaultTask() {
             .sortedByDescending { it.name }
 
         published.forEach { postDirectory ->
+            val target = postsOutput.resolve(postDirectory.name)
             fileSystemOperations.copy {
                 from(postDirectory)
-                into(postsOutput.resolve(postDirectory.name))
+                into(target)
                 exclude(".DS_Store")
+            }
+            // 이미지 크기를 기록해 둬야 앱이 이미지 자리를 미리 잡는다. 번역본(index.en.md)도 같은 이미지를 쓴다.
+            target.listFiles { file -> file.name.startsWith("index.") && file.extension == "md" }.orEmpty().forEach {
+                it.writeText(withImageSizes(it.readText(), postDirectory))
             }
         }
         postsOutput.resolve("index.json").writeText(
