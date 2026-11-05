@@ -14,6 +14,7 @@ import log.haeti.core.designsystem.HaetiTheme
 import log.haeti.core.designsystem.haetiMonoFontFamily
 import log.haeti.core.markdown.ImageResolver
 import log.haeti.core.markdown.MarkdownBody
+import log.haeti.core.markdown.model.ImageLoad
 import org.jetbrains.skia.EncodedImageFormat
 import java.io.File
 import kotlin.test.Test
@@ -38,7 +39,7 @@ class InlineCodeChipRender {
                         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(24.dp)) {
                             MarkdownBody(
                                 markdown = md,
-                                imageResolver = ImageResolver { null },
+                                imageResolver = ImageResolver { ImageLoad.Failed },
                                 compact = compact,
                                 codeFontFamily = haetiMonoFontFamily(),
                             )

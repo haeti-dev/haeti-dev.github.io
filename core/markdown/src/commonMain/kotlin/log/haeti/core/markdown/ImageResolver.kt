@@ -1,7 +1,7 @@
 package log.haeti.core.markdown
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.painter.Painter
+import log.haeti.core.markdown.model.ImageLoad
 
 /**
  * 마크다운 안의 상대경로 이미지를 해석하는 인터페이스.
@@ -9,11 +9,11 @@ import androidx.compose.ui.graphics.painter.Painter
  */
 fun interface ImageResolver {
     /**
-     * 마크다운 안의 상대경로 이미지(예: `images/foo.webp`)를 [Painter]로 해석한다.
+     * 마크다운 안의 상대경로 이미지(예: `images/foo.webp`)를 읽은 상태를 돌려준다.
      *
      * @param path 마크다운 문서 기준 상대경로
-     * @return 해석된 [Painter]. 해석에 실패하면 null
+     * @return 읽는 중이면 [ImageLoad.Loading], 다 읽으면 [ImageLoad.Loaded], 실패하면 [ImageLoad.Failed]
      */
     @Composable
-    fun painterFor(path: String): Painter?
+    fun load(path: String): ImageLoad
 }

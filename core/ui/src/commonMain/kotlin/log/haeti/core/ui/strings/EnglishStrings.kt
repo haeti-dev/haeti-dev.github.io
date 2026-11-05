@@ -35,6 +35,7 @@ val EnglishStrings =
         postNotFoundMessage = "The link may have changed or the post was taken down. Try finding it in the list.",
         postErrorTitle = "Couldn't load this post",
         postErrorMessage = "Refresh the page to try again.",
+        imageLoadFailed = "Couldn't load this image",
         notFoundTitle = "Page not found",
         notFoundMessage = "The link may have changed, or the page doesn't exist yet.",
         goToList = "Go to all posts",

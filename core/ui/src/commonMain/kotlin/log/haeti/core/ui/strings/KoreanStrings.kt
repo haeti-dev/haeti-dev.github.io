@@ -34,6 +34,7 @@ val KoreanStrings =
         postNotFoundMessage = "주소가 바뀌었거나 내려간 글입니다. 목록에서 다시 찾아보세요.",
         postErrorTitle = "글을 불러오지 못했습니다",
         postErrorMessage = "새로고침하면 다시 시도합니다.",
+        imageLoadFailed = "이미지를 불러오지 못했습니다",
         notFoundTitle = "페이지를 찾을 수 없습니다",
         notFoundMessage = "주소가 바뀌었거나 아직 없는 페이지입니다.",
         goToList = "글 목록으로 가기",

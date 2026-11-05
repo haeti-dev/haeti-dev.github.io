@@ -37,6 +37,7 @@ data class HaetiStrings(
     val postNotFoundMessage: String,
     val postErrorTitle: String,
     val postErrorMessage: String,
+    val imageLoadFailed: String,
     val notFoundTitle: String,
     val notFoundMessage: String,
     val goToList: String,
