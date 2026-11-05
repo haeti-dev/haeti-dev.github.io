@@ -1,5 +1,6 @@
 package log.haeti.core.navigation
 
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import kotlin.test.BeforeTest
@@ -39,9 +40,12 @@ class NavigatorTest {
     @Test
     fun navigateToCurrentKeyIsIgnored() {
         navigator.navigate(firstPost)
-        navigator.navigate(firstPost)
+
+        val writes = backStackWritesDuring { navigator.navigate(firstPost) }
 
         assertEquals(listOf(HomeNavKey, firstPost), navigationState.backStack.toList())
+        // 빼고 다시 넣어도 내용은 같다. 무시했는지는 스택을 건드렸는지로 본다.
+        assertEquals(0, writes)
     }
 
     @Test
@@ -101,8 +105,30 @@ class NavigatorTest {
         navigator.navigate(firstPost)
         val before = navigationState.backStack.toList()
 
-        navigator.replaceAll(before)
+        val writes = backStackWritesDuring { navigator.replaceAll(before) }
 
         assertEquals(before, navigationState.backStack.toList())
+        // 비웠다가 같은 내용으로 다시 채우면 내용은 같아도 화면 상태가 버려진다.
+        assertEquals(0, writes)
+    }
+
+    @Test
+    fun backStackWritesAreCounted() {
+        // 아래 세는 도구가 실제 쓰기를 놓치지 않는지 확인한다. 못 세면 위의 0은 아무것도 증명하지 못한다.
+        assertTrue(backStackWritesDuring { navigator.navigate(secondPost) } > 0)
+    }
+
+    /** [block] 동안 백스택에 일어난 스냅숏 쓰기 수. */
+    private fun backStackWritesDuring(block: () -> Unit): Int {
+        Snapshot.sendApplyNotifications()
+        var writes = 0
+        val observer = Snapshot.registerApplyObserver { changed, _ -> writes += changed.size }
+        try {
+            block()
+            Snapshot.sendApplyNotifications()
+        } finally {
+            observer.dispose()
+        }
+        return writes
     }
 }
