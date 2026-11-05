@@ -116,6 +116,8 @@ Read all files under `.claude/rules/` before writing code:
 Before claiming done: `./gradlew spotlessApply jvmTest build` passes, and for UI
 work run the relevant app target and check it renders in a real browser
 (the embedded preview pane throttles frames when hidden; see notes/TROUBLESHOOTING.md).
+For a PR that changes non-UI logic, run the `mutation-check` skill and put its
+numbers in the PR's 검증 section.
 
 ## Docs
 
