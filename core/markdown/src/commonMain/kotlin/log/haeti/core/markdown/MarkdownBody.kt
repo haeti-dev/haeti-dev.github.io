@@ -34,11 +34,12 @@ import log.haeti.core.markdown.model.ImageDirective
  *   [HaetiImageTransformer]를 반드시 넘겨야 그려진다.
  *
  * @param markdown 렌더링할 마크다운 본문 (프론트매터 제외)
- * @param imageResolver 본문 내 상대경로 이미지를 Painter로 변환하는 resolver
+ * @param imageResolver 본문 내 상대경로 이미지를 읽는 resolver
  * @param modifier 루트 컴포저블에 적용할 [Modifier]
  * @param compact 좁은 화면(<600dp)용 축소 타이포 스케일 적용 여부
  * @param codeFontFamily 코드에 쓸 고정폭 글꼴. 웹은 번들 글꼴을 넘겨야 고정폭으로 그려진다
  * @param onOpenPost 본문의 글 링크(`post/<slug>`)를 눌렀을 때 슬러그를 넘기는 콜백
+ * @param imageFailedText 이미지를 읽지 못한 자리에 보일 문구. 화면 언어에 맞춰 넘긴다
  */
 @Composable
 fun MarkdownBody(
@@ -48,6 +49,7 @@ fun MarkdownBody(
     compact: Boolean = false,
     codeFontFamily: FontFamily = FontFamily.Monospace,
     onOpenPost: (String) -> Unit = {},
+    imageFailedText: String = DEFAULT_IMAGE_FAILED_TEXT,
 ) {
     val (cleaned, directives) =
         remember(markdown) {
@@ -63,6 +65,7 @@ fun MarkdownBody(
     CompositionLocalProvider(
         LocalCodeFontFamily provides codeFontFamily,
         LocalUriHandler provides linkHandler,
+        LocalImageFailedText provides imageFailedText,
     ) {
         SelectableArea {
             HaetiMarkdown(cleaned, directives, imageResolver, transformer, isDarkPage, compact, modifier)
