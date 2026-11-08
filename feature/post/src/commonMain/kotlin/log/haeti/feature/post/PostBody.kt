@@ -16,6 +16,7 @@ import log.haeti.core.ui.layout.ContentMaxWidth
 import log.haeti.core.ui.layout.HomeMaxWidth
 import log.haeti.core.ui.layout.LocalLayoutTier
 import log.haeti.core.ui.layout.isCompact
+import log.haeti.core.ui.strings.LocalHaetiStrings
 
 /**
  * 글 상세 본문. 머리말(제목·요약·메타) → 본문보다 넓게 튀어나온 커버 → 본문 → 앞뒤 글 순서다.
@@ -55,6 +56,7 @@ internal fun PostBody(
             compact = compact,
             codeFontFamily = haetiMonoFontFamily(),
             onOpenPost = onOpenPost,
+            imageFailedText = LocalHaetiStrings.current.imageLoadFailed,
         )
         Spacer(Modifier.height(80.dp))
         PostNeighbors(newer = state.newer, older = state.older, onOpenPost = onOpenPost)

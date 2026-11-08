@@ -32,10 +32,12 @@ import com.mikepenz.markdown.compose.components.MarkdownComponentModel
 import log.haeti.core.designsystem.interaction.fadeInOnAppear
 import log.haeti.core.markdown.model.ImageAlign
 import log.haeti.core.markdown.model.ImageDirective
+import log.haeti.core.markdown.model.ImageLoad
 
 /**
  * 이미지 지시어(width·align·caption·dark)를 반영해 이미지를 렌더링하는 custom image component.
  * 누르면 [ImageZoomDialog]로 크게 본다. 읽는 동안에는 같은 폭의 자리를 먼저 잡아 두고, 다 읽으면 페이드인한다.
+ * 읽지 못하면 그 자리에 안내 문구와 대체텍스트를 보인다.
  * `MarkdownBody`가 `markdownComponents(image = ...)`로 연결한다.
  *
  * @param model mikepenz 렌더러가 넘겨주는 현재 이미지 노드 정보
@@ -53,15 +55,17 @@ internal fun MarkdownImageComponent(
     val path = model.node.imagePath(model.content) ?: return
     val alt = model.node.imageAlt(model.content)
     val directive = directives[path] ?: ImageDirective()
-    val painter = imageResolver.painterFor(directive.pathFor(path, isDarkPage))
+    val load = imageResolver.load(directive.pathFor(path, isDarkPage))
     var zoomed by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         Box(modifier = Modifier.fillMaxWidth()) {
             val sized = Modifier.fillMaxWidth(directive.width / 100f).align(directive.align.toBoxAlignment())
-            LoadedImage(painter, alt, directive.aspectRatio, modifier = sized, onClick = { zoomed = true })
+            LoadedImage(load, alt, directive.aspectRatio, modifier = sized, onClick = { zoomed = true })
         }
-        if (zoomed && painter != null) ImageZoomDialog(painter, directive.caption, onDismiss = { zoomed = false })
+        if (zoomed && load is ImageLoad.Loaded) {
+            ImageZoomDialog(load.painter, directive.caption, onDismiss = { zoomed = false })
+        }
         directive.caption?.let { caption ->
             Text(
                 text = caption,
@@ -78,24 +82,29 @@ internal fun MarkdownImageComponent(
  * 다 읽은 이미지는 짧게 페이드인하고, 읽는 중에는 같은 폭과 비율의 자리를 먼저 차지한다.
  * 비율은 배포 빌드가 기록한 [aspectRatio]를 쓰고, 없으면(어드민 미리보기) 16:9로 잡는다.
  * 다 읽은 뒤에도 같은 비율을 지켜 자리와 이미지 높이가 어긋나 아래 글이 밀리지 않게 한다.
+ * 읽지 못하면 같은 자리에 [ImageFailedPlaceholder]를 보인다.
  */
 @Composable
 private fun LoadedImage(
-    painter: Painter?,
+    load: ImageLoad,
     alt: String?,
     aspectRatio: Float?,
     modifier: Modifier,
     onClick: () -> Unit,
 ) {
-    if (painter == null) {
-        Box(
-            modifier
-                .aspectRatio(aspectRatio ?: PLACEHOLDER_ASPECT_RATIO)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surface),
-        )
-        return
-    }
+    val reserved = modifier.aspectRatio(aspectRatio ?: PLACEHOLDER_ASPECT_RATIO)
+    val painter =
+        when (load) {
+            ImageLoad.Loading -> {
+                Box(reserved.clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surface))
+                return
+            }
+            ImageLoad.Failed -> {
+                ImageFailedPlaceholder(alt, reserved)
+                return
+            }
+            is ImageLoad.Loaded -> load.painter
+        }
     Image(
         painter = painter,
         contentDescription = alt,
