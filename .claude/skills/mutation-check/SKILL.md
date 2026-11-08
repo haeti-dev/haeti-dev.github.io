@@ -46,7 +46,16 @@ K=$PWD/.claude/skills/mutation-check/scripts
 # build-logic (separate build)
 ./gradlew -p build-logic --no-configuration-cache --init-script $K/pitest.init.gradle \
   -PpitTargets='log.haeti.buildlogic.ImageSizesKt*' -PpitTests='log.haeti.buildlogic.*' :convention:pitest
-python3 $K/survivors.py <module>/build/reports/pitest/mutations.xml <module>/src/commonMain/kotlin
+```
+
+Then list the survivors. Pass the source root that matches the module type; a
+wrong root stops the script instead of silently dropping real survivors:
+
+```bash
+# KMP module: commonMain (add src/jvmMain/kotlin if the module has one)
+python3 $K/survivors.py core/navigation/build/reports/pitest/mutations.xml core/navigation/src/commonMain/kotlin
+# build-logic: Gradle main source set
+python3 $K/survivors.py build-logic/convention/build/reports/pitest/mutations.xml build-logic/convention/src/main/kotlin
 ```
 
 Tests, `$$serializer`, and `*.generated.*` classes are always excluded. A module

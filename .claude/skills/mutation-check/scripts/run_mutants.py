@@ -15,7 +15,12 @@ mutants_path, target_name, workdir, *test_cmd = sys.argv[1:]
 mutants = json.loads(Path(mutants_path).read_text())
 target = Path(target_name)
 backup = target.with_name(target.name + ".mutation-backup")
-shutil.copyfile(target, backup)
+# 이전 실행이 강제 종료되면 원본은 백업에만 남는다. 덮어쓰면 원본을 잃으니 멈추고 복구를 맡긴다.
+try:
+    with open(backup, "xb") as copy:
+        copy.write(target.read_bytes())
+except FileExistsError:
+    sys.exit(f"이전 실행의 백업이 남아 있다: {backup}\n원본일 수 있으니 확인해 {target}로 되돌리고 백업을 지운 뒤 다시 실행한다.")
 
 
 def run_tests():
