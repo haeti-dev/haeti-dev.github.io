@@ -1,0 +1,61 @@
+// PIT 뮤테이션 검사를 저장소 빌드 파일을 건드리지 않고 붙이는 init 스크립트.
+// PIT Gradle 플러그인은 Gradle 9와 맞지 않아, PIT 명령줄 도구를 JavaExec 작업(`pitest`)으로 돌린다.
+// KMP 모듈은 jvm 컴파일 결과를, build-logic(kotlin-dsl)은 main/test 소스 세트를 쓴다.
+//
+//   ./gradlew --no-configuration-cache --init-script <이 파일> \
+//       -PpitTargets='log.haeti.core.navigation.path.*' -PpitTests='log.haeti.core.navigation.*' :core:navigation:pitest
+//   ./gradlew -p build-logic --no-configuration-cache --init-script <이 파일> \
+//       -PpitTargets='log.haeti.buildlogic.ImageSizesKt*' -PpitTests='log.haeti.buildlogic.*' :convention:pitest
+//
+// 선택: -PpitExclude=클래스,패턴 (컴포저블 파일 등). 결과는 <모듈>/build/reports/pitest/mutations.xml.
+allprojects {
+    afterEvaluate { project ->
+        if (!project.hasProperty("pitTargets")) return
+        def classes = pitClasses(project)
+        if (classes == null) return
+        def pit = project.configurations.create("pitestCli")
+        project.dependencies.add("pitestCli", "org.pitest:pitest-command-line:1.17.0")
+        project.tasks.register("pitest", JavaExec) {
+            dependsOn(classes.compileTasks)
+            classpath = pit + classes.classpath
+            mainClass = "org.pitest.mutationtest.commandline.MutationCoverageReport"
+            def excluded = ["*Test", "*Test\$*", "*\$\$serializer", "*.generated.*"] +
+                (project.findProperty("pitExclude")?.toString()?.split(",")?.toList() ?: [])
+            args = [
+                "--targetClasses", project.property("pitTargets"),
+                "--targetTests", project.property("pitTests"),
+                "--excludedClasses", excluded.join(","),
+                "--sourceDirs", classes.sources.join(","),
+                "--reportDir", project.layout.buildDirectory.dir("reports/pitest").get().asFile.path,
+                "--outputFormats", "XML,HTML",
+                "--timestampedReports", "false",
+                "--mutators", "STRONGER",
+                "--threads", "4",
+            ]
+        }
+    }
+}
+
+/** 모듈 종류에 맞는 클래스 경로, 소스 디렉터리, 컴파일 작업. 둘 다 아니면 null. */
+static Map pitClasses(project) {
+    def kotlin = project.extensions.findByName("kotlin")
+    if (kotlin?.hasProperty("targets")) {
+        // KMP: jvm 타깃이 없으면(wasm 전용 app:web) 대상이 아니다.
+        def jvm = kotlin.targets.findByName("jvm")
+        if (jvm == null) return null
+        def main = jvm.compilations.getByName("main")
+        def test = jvm.compilations.getByName("test")
+        return [
+            classpath: test.output.allOutputs + main.output.allOutputs + test.runtimeDependencyFiles,
+            sources: ["src/commonMain/kotlin", "src/jvmMain/kotlin"].collect { project.file(it) },
+            compileTasks: [main.compileAllTaskName, test.compileAllTaskName],
+        ]
+    }
+    def sets = project.extensions.findByName("sourceSets")
+    if (sets?.findByName("test") == null) return null
+    return [
+        classpath: sets.test.runtimeClasspath,
+        sources: sets.main.allSource.srcDirs.toList(),
+        compileTasks: ["testClasses"],
+    ]
+}
