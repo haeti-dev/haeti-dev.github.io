@@ -29,9 +29,11 @@ class PostImageResolver(
     /** [path]의 바이트를 읽어 그린다. 처음 읽는 동안에는 [ImageLoad.Loading]이다. */
     @Composable
     override fun load(path: String): ImageLoad {
-        var bytes by remember(path) { mutableStateOf(loaded[path]) }
-        var failed by remember(path) { mutableStateOf(false) }
-        LaunchedEffect(path) {
+        // 키에 resolver를 넣는다. 글마다 이미지 이름이 겹치니(images/01.webp) 같은 자리에서 글이 바뀌면
+        // 이전 글의 바이트나 실패를 이어받지 않고, 이전 글의 읽기도 취소해야 한다.
+        var bytes by remember(this, path) { mutableStateOf(loaded[path]) }
+        var failed by remember(this, path) { mutableStateOf(false) }
+        LaunchedEffect(this, path) {
             if (bytes != null) return@LaunchedEffect
             val read = readOrNull(path)
             if (read == null) {
